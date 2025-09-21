@@ -2,6 +2,7 @@ require('dotenv').config();
 require('express-async-errors');
 const express = require('express');
 const cookieParser = require('cookie-parser');
+const ErrorHandler = require('./middleware/errorHandler');
 const connectDB = require('./db/connectDb');
 const authRouter = require('./routes/auth');
 
@@ -11,6 +12,8 @@ app.use(express.json());
 app.use(cookieParser());
 
 app.use('/api/v1/auth', authRouter);
+
+app.use(ErrorHandler);
 
 const port = process.env.PORT || 3000;
 const mongoURI = process.env.MONGO_URI;

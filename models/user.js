@@ -1,3 +1,4 @@
+require('dotenv').config();
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
@@ -20,6 +21,7 @@ const UserSchema = new mongoose.Schema(
         /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
         'Please provide a valid email',
       ],
+      lowercase: true,
     },
     password: {
       type: String,
@@ -33,7 +35,7 @@ const UserSchema = new mongoose.Schema(
       type: String,
       required: false,
     },
-    roles: {
+    role: {
       type: String,
       required: false,
       enum: Object.values(ROLES),
@@ -44,9 +46,9 @@ const UserSchema = new mongoose.Schema(
 );
 
 UserSchema.pre('save', async function () {
-  if (isModified(this.password)) {
-    const salt = bcrypt.genSalt(10);
-    this.password = bcrypt.hash(this.password, salt);
+  if (this.isModified('password')) {
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(this.password, salt);
   }
 });
 
@@ -54,7 +56,7 @@ UserSchema.methods.createAccessToken = function () {
   return jwt.sign(
     { userId: this._id, username: this.username, role: this.role },
     process.env.JWT_ACCESS_SECRET,
-    { expiresIn: process.env.ACESS_LIFETIME }
+    { expiresIn: process.env.ACCESS_LIFETIME }
   );
 };
 
@@ -67,7 +69,7 @@ UserSchema.methods.createRefreshToken = function () {
 };
 
 UserSchema.methods.comparePassword = async function (candidate) {
-  const isMatch = await bcrypt.compare(this.password, candidate);
+  const isMatch = await bcrypt.compare(candidate, this.password);
   return isMatch;
 };
 
