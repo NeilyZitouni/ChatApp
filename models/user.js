@@ -31,9 +31,15 @@ const UserSchema = new mongoose.Schema(
         'Password must be at least 8 characters long, include one uppercase letter, one number, and one special character',
       ],
     },
-    picture: {
-      type: String,
-      required: false,
+    profilePicture: {
+      imageUrl: {
+        type: String,
+        default: null,
+      },
+      cloudinaryId: {
+        type: String,
+        default: null,
+      },
     },
     role: {
       type: String,
